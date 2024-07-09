@@ -24,13 +24,6 @@ Run your script as a module using the -m flag. Make sure to replace the slashes 
 from src.binary_classification.data import (
     load_ekg_data,
 )
-
-##################
-# from src.binary_classification.data2017 import (
-#
-# )
-##############
-
 from src.utils.metrics import BinaryAccuracy
 
 from src.utils.torchutils import set_seed, save_model

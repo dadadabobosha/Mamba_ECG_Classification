@@ -1,4 +1,4 @@
-# # deep learning libraries
+#
 # import torch
 # import numpy as np
 # from torch.utils.data import DataLoader
@@ -8,7 +8,7 @@
 # from typing import Optional
 #
 # from src.utils.metrics import Accuracy
-#
+# from tqdm import tqdm
 #
 # @torch.enable_grad()
 # def train_step(
@@ -37,12 +37,16 @@
 #     model.train()
 #     losses = []
 #
-#     # for inputs, _, targets in train_data:   #给2017的时候ValueError: not enough values to unpack (expected 3, got 2)
-#     for inputs, targets in train_data:
+#     # 使用 tqdm 包装数据加载器
+#     for inputs, targets in tqdm(train_data, desc=f"Training Epoch {epoch + 1}"):
+#     # for inputs, targets in train_data:  # 修改为从数据加载器中解包两个值
 #         inputs, targets = inputs.to(device), targets.to(device)
 #
 #         # forward
 #         outputs = model(inputs)
+#
+#         # 打印 outputs 的维度
+#         print(f"outputs.shape: {outputs.shape}")
 #
 #         # Compute loss
 #         loss_value = loss(outputs, targets)
@@ -50,16 +54,16 @@
 #
 #         optimizer.zero_grad()
 #         loss_value.backward()
-#         # torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
 #         optimizer.step()
 #
-#         accuracy.update(outputs, targets)
+#         # 更新准确度
+#         predictions = torch.argmax(outputs, dim=1)
+#         accuracy.update(predictions, targets)
 #
 #     # Write to tensorboard
 #     writer.add_scalar("train/loss", np.mean(losses), epoch)
 #     writer.add_scalar("train/accuracy", accuracy.compute(), epoch)
 #     accuracy.reset()
-#
 #
 # @torch.no_grad()
 # def val_step(
@@ -73,10 +77,10 @@
 #     accuracy: Accuracy = Accuracy(),
 # ) -> None:
 #     """
-#     This function train the model.
+#     This function validate the model.
 #
 #     Args:
-#         model: model to train.
+#         model: model to validate.
 #         val_data: dataloader of validation data.
 #         loss: loss function.
 #         scheduler: scheduler.
@@ -89,7 +93,9 @@
 #     losses = []
 #
 #     with torch.no_grad():
-#         for inputs, _, targets in val_data:
+#         # 使用 tqdm 包装数据加载器
+#         for inputs, targets in tqdm(val_data, desc=f"Validation Epoch {epoch + 1}"):
+#         # for inputs, targets in val_data:  # 修改为从数据加载器中解包两个值
 #             inputs, targets = inputs.to(device), targets.to(device)
 #
 #             # forward
@@ -99,8 +105,9 @@
 #             loss_value = loss(outputs, targets)
 #             losses.append(loss_value.item())
 #
-#             # Update accuracy
-#             accuracy.update(outputs, targets)
+#             # 更新准确度
+#             predictions = torch.argmax(outputs, dim=1)
+#             accuracy.update(predictions, targets)
 #
 #     if scheduler is not None:
 #         scheduler.step()
@@ -109,16 +116,21 @@
 #     writer.add_scalar("val/loss", np.mean(losses), epoch)
 #     writer.add_scalar("val/accuracy", accuracy.compute(), epoch)
 #     accuracy.reset()
-# deep learning libraries
+
+
+
+
+r"""
+下面是只保留N和A两类的代码，
+然后在N和A两类中分类出A类的数据
+"""
+
 import torch
 import numpy as np
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
-
-# other libraries
 from typing import Optional
-
-from src.utils.metrics import Accuracy
+from src.utils.metrics import BinaryAccuracy
 from tqdm import tqdm
 
 @torch.enable_grad()
@@ -130,10 +142,10 @@ def train_step(
     writer: SummaryWriter,
     epoch: int,
     device: torch.device,
-    accuracy: Accuracy = Accuracy(),
+    accuracy: BinaryAccuracy = BinaryAccuracy(),
 ) -> None:
     """
-    This function train the model.
+    This function trains the model.
 
     Args:
         model: model to train.
@@ -144,13 +156,10 @@ def train_step(
         epoch: epoch of the training.
         device: device for running operations.
     """
-    # Training
     model.train()
     losses = []
 
-    # 使用 tqdm 包装数据加载器
     for inputs, targets in tqdm(train_data, desc=f"Training Epoch {epoch + 1}"):
-    # for inputs, targets in train_data:  # 修改为从数据加载器中解包两个值
         inputs, targets = inputs.to(device), targets.to(device)
 
         # forward
@@ -165,8 +174,7 @@ def train_step(
         optimizer.step()
 
         # 更新准确度
-        predictions = torch.argmax(outputs, dim=1)
-        accuracy.update(predictions, targets)
+        accuracy.update(outputs, targets)
 
     # Write to tensorboard
     writer.add_scalar("train/loss", np.mean(losses), epoch)
@@ -182,10 +190,10 @@ def val_step(
     writer: SummaryWriter,
     epoch: int,
     device: torch.device,
-    accuracy: Accuracy = Accuracy(),
+    accuracy: BinaryAccuracy = BinaryAccuracy(),
 ) -> None:
     """
-    This function validate the model.
+    This function validates the model.
 
     Args:
         model: model to validate.
@@ -196,14 +204,11 @@ def val_step(
         epoch: epoch of the training.
         device: device for running operations.
     """
-    # Validation
     model.eval()
     losses = []
 
     with torch.no_grad():
-        # 使用 tqdm 包装数据加载器
         for inputs, targets in tqdm(val_data, desc=f"Validation Epoch {epoch + 1}"):
-        # for inputs, targets in val_data:  # 修改为从数据加载器中解包两个值
             inputs, targets = inputs.to(device), targets.to(device)
 
             # forward
@@ -214,8 +219,7 @@ def val_step(
             losses.append(loss_value.item())
 
             # 更新准确度
-            predictions = torch.argmax(outputs, dim=1)
-            accuracy.update(predictions, targets)
+            accuracy.update(outputs, targets)
 
     if scheduler is not None:
         scheduler.step()

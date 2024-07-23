@@ -10,3 +10,4 @@ check and edit the path in
 "src/binary_classification/data2017_3_balancedata.py"
 "src/train_binary/train_cnn_with2017.py"
 "src/evaluate2017cnn.py"
+![image](https://github.com/user-attachments/assets/26fce8fc-9cf8-4fd5-aa41-dfbd3d54ac22)

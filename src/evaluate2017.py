@@ -23,8 +23,7 @@ def main(name, accuracy: Accuracy = Accuracy()) -> None:
     """
     This function is the main program.
     """
-    # Load test data
-    # test_data = torch.load(DATA_PATH + "test_data.pt")
+
     # Load test data
     _, _, test_data = load_ekg_data2017(DATA_PATH, num_workers=4)
 
@@ -61,9 +60,10 @@ def main(name, accuracy: Accuracy = Accuracy()) -> None:
 
 if __name__ == "__main__":
     # path = "./report_models/model_name.pth"
-    path = "C:\\wenjian\\MasterArbeit\\Code\\repo\\ECG+SSM\\Mamba-Biometric-EKG-Analysis-Technology-MambaBEAT-master\\models\\binary_MambaBEAT+data2017_2epoch_NA.pth"
-    # path = "C:\\wenjian\\MasterArbeit\\REPOS\Mamba-Biometric-EKG-Analysis-Technology-MambaBEAT-master\src\\benchmarks\\binary_MambaBEAT.pth"
-    # path = "C:\\wenjian\\MasterArbeit\\REPOS\\Mamba-Biometric-EKG-Analysis-Technology-MambaBEAT-master\\models\\binary_MambaBEAT.pth"
+    # path = "C:\\wenjian\\MasterArbeit\\Code\\repo\\ECG+SSM\\Mamba-Biometric-EKG-Analysis-Technology-MambaBEAT-master\\src\\benchmarks\\binary_MambaBEAT.pth"
+    # path = "C:\\wenjian\\MasterArbeit\\Code\\repo\\ECG+SSM\\Mamba-Biometric-EKG-Analysis-Technology-MambaBEAT-master\\models\\binary_MambaBEAT.pth"
+    path = "C:\\wenjian\\MasterArbeit\\Code\\repo\\ECG+SSM\\Mamba-Biometric-EKG-Analysis-Technology-MambaBEAT-master\\models\\binary_MambaBEAT+data2017_30epoch_NA.pth"
+
 
     # change to BinaryAccuracy() if model has a binary approach (starts with binary)
     # accuracy = Accuracy()

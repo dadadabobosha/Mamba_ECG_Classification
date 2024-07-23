@@ -12,12 +12,13 @@ from src.utils.train_functions import train_step, val_step
 from src.utils.metrics import BinaryAccuracy
 
 
-from src.binary_classification.data import (
-    load_ekg_data,
+from src.binary_classification.data2017_3_balancedata import (
+    get_dataloaders,
 )
 from src.utils.torchutils import set_seed, save_model
 
 from src.modules.lstm import LSTM
+import matplotlib.pyplot as plt
 
 # set device
 device: torch.device = (
@@ -30,7 +31,7 @@ torch.set_num_threads(8)
 
 # static variables
 DATA_PATH: str = "./data/"
-N_CLASSES: int = 5
+N_CLASSES: int = 2
 
 
 def main() -> None:
@@ -54,9 +55,13 @@ def main() -> None:
     # load data
     train_data: DataLoader
     val_data: DataLoader
-    train_data, val_data, _ = load_ekg_data(
-        DATA_PATH, batch_size=batch_size, num_workers=4
-    )
+    train_data, val_data, test_dataset = get_dataloaders(batch_size=batch_size)
+
+    torch.save(test_dataset,
+               'C:\\wenjian\\MasterArbeit\\Code\\repo\\ECG+SSM\\Mamba-Biometric-EKG-Analysis-Technology-MambaBEAT-master\\src\\test_dataset.pth')
+
+
+
 
     # define name and writer
     name: str = f"binary_{'Bi'*bidirectional}LSTM723922"
@@ -71,7 +76,7 @@ def main() -> None:
     )
 
     # define loss and optimizer
-    loss: torch.nn.Module = torch.nn.BCELoss()
+    loss: torch.nn.Module = torch.nn.CrossEntropyLoss
     optimizer: torch.optim.Optimizer = torch.optim.AdamW(model.parameters(), lr=lr)
 
     # compute the accuracy
@@ -84,24 +89,66 @@ def main() -> None:
     )
     # Train the model
     try:
+
+        train_losses = []
+        train_accuracies = []
+        val_losses = []
+        val_accuracies = []
+
         for epoch in tqdm(range(epochs)):  # loop over the dataset multiple times
-            # call train step
-            train_step(
+            # # call train step
+            # train_step(
+            #     model, train_data, loss, optimizer, writer, epoch, device, accuracy
+            # )
+            #
+            # # call val step
+            # val_step(model, val_data, loss, scheduler, writer, epoch, device, accuracy)
+            #
+            # # clear the GPU cache
+            # torch.cuda.empty_cache()
+            for batch in train_data:
+                print(batch)
+                break
+
+
+            train_loss, train_accuracy = train_step(
                 model, train_data, loss, optimizer, writer, epoch, device, accuracy
             )
+            train_losses.append(train_loss)
+            train_accuracies.append(train_accuracy)
 
-            # call val step
-            val_step(model, val_data, loss, scheduler, writer, epoch, device, accuracy)
+            val_loss, val_accuracy = val_step(
+                model, val_data, loss, scheduler, writer, epoch, device, accuracy
+            )
+            val_losses.append(val_loss)
+            val_accuracies.append(val_accuracy)
 
-            # clear the GPU cache
-            torch.cuda.empty_cache()
     except KeyboardInterrupt:
         pass
     # save model
     save_model(model, f"./models/{name}.pth")
 
     return None
+def plot_metrics(train_losses, train_accuracies, val_losses, val_accuracies):
+    plt.figure(figsize=(12, 5))
 
+    plt.subplot(1, 2, 1)
+    plt.plot(train_losses, label='Train Loss')
+    plt.plot(val_losses, label='Validation Loss')
+    plt.title('Training and Validation Loss')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.legend()
+
+    plt.subplot(1, 2, 2)
+    plt.plot(train_accuracies, label='Train Accuracy')
+    plt.plot(val_accuracies, label='Validation Accuracy')
+    plt.title('Training and Validation Accuracy')
+    plt.xlabel('Epoch')
+    plt.ylabel('Accuracy')
+    plt.legend()
+
+    plt.show()
 
 if __name__ == "__main__":
     main()

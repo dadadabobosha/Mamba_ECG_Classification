@@ -18,6 +18,7 @@ from src.utils.metrics import BinaryAccuracy
 
 from src.utils.torchutils import set_seed, save_model
 from src.modules.cnn1 import YModel
+import matplotlib.pyplot as plt
 
 # set device
 device: torch.device = (
@@ -29,7 +30,7 @@ set_seed(42)
 torch.set_num_threads(8)
 
 # static variables
-DATA_PATH: str = "./data/"
+DATA_PATH: str = "../binary_classification/data/"
 N_CLASSES: int = 5
 
 
@@ -38,7 +39,7 @@ def main() -> None:
     This function is the main program for the training.
     """
     # hyperparameters
-    epochs: int = 40
+    epochs: int = 20
     lr: float = 1e-1
     batch_size: int = 128
     step_size: int = 10
@@ -54,7 +55,7 @@ def main() -> None:
     train_data, val_data, _ = load_ekg_data(DATA_PATH, batch_size=batch_size)
 
     # define name and writer
-    name: str = "binary_cnn"
+    name: str = "binary_cnn_11"
     writer: SummaryWriter = SummaryWriter(f"runs/{name}")
     inputs: torch.Tensor = next(iter(train_data))[0]
 

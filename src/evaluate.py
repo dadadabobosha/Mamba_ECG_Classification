@@ -3,14 +3,8 @@ from src.binary_classification.data import load_ekg_data
 from src.utils.torchutils import set_seed, load_model
 from src.utils.metrics import Accuracy, BinaryAccuracy
 
-r"""
-
-(venv) PS C:\wenjian\MasterArbeit\REPOS\Mamba-Biometric-EKG-Analysis-Technology-MambaBEAT-master> python -m src.evaluate
-
-"""
-
 # static variables
-DATA_PATH: str = "../data/"
+DATA_PATH: str = "./data/"
 NUM_CLASSES: int = 5
 
 # set device
@@ -44,11 +38,7 @@ def main(name, accuracy: Accuracy = Accuracy()) -> None:
 
 
 if __name__ == "__main__":
-    # path = "./report_models/model_name.pth"
-    path = "C:\\wenjian\\MasterArbeit\\Code\\repo\\ECG+SSM\\Mamba-Biometric-EKG-Analysis-Technology-MambaBEAT-master\\src\\benchmarks\\model_MambaBEAT.pth"
-    # path = "C:\\wenjian\\MasterArbeit\\REPOS\Mamba-Biometric-EKG-Analysis-Technology-MambaBEAT-master\src\\benchmarks\\binary_MambaBEAT.pth"
-    # path = "C:\\wenjian\\MasterArbeit\\REPOS\\Mamba-Biometric-EKG-Analysis-Technology-MambaBEAT-master\\models\\binary_MambaBEAT.pth"
+    path = "./report_models/model_name.pth"
     # change to BinaryAccuracy() if model has a binary approach (starts with binary)
     accuracy = Accuracy()
-    # accuracy = BinaryAccuracy()
     main(path, accuracy)

@@ -180,7 +180,7 @@ def extract_features(df):
 
 def load_ekg_data(
     path: str,
-    sampling_rate: int = 500,
+    sampling_rate: int = 100,
     batch_size: int = 128,
     shuffle: bool = True,
     drop_last: bool = False,
@@ -205,7 +205,8 @@ def load_ekg_data(
 
     if not os.path.isdir(f"{path}"):
         os.makedirs(f"{path}")
-        download_data(path)
+        print("No data found. Downloading data...")
+        # download_data(path)
 
     Y = pd.read_csv(path + "ptbxl_database.csv", index_col="ecg_id")
     Y.scp_codes = Y.scp_codes.apply(ast.literal_eval)

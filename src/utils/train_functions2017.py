@@ -173,13 +173,21 @@ def train_step(
         loss_value.backward()
         optimizer.step()
 
+
         # 更新准确度
         accuracy.update(outputs, targets)
 
+        print(f"Batch Loss: {loss_value.item()}")
+        print(f"Batch Accuracy: {accuracy.compute()}")
+
+    avg_loss = np.mean(losses)
+    avg_accuracy = accuracy.compute()
+
     # Write to tensorboard
-    writer.add_scalar("train/loss", np.mean(losses), epoch)
-    writer.add_scalar("train/accuracy", accuracy.compute(), epoch)
+    writer.add_scalar("train/loss", avg_loss, epoch)
+    writer.add_scalar("train/accuracy", avg_accuracy, epoch)
     accuracy.reset()
+    return avg_loss, avg_accuracy
 
 @torch.no_grad()
 def val_step(
@@ -221,10 +229,16 @@ def val_step(
             # 更新准确度
             accuracy.update(outputs, targets)
 
+            print(f"Validation Batch Loss: {loss_value.item()}")
+            print(f"Validation Batch Accuracy: {accuracy.compute()}")
+    avg_loss = np.mean(losses)
+    avg_accuracy = accuracy.compute()
+
     if scheduler is not None:
         scheduler.step()
 
     # Write to tensorboard
-    writer.add_scalar("val/loss", np.mean(losses), epoch)
-    writer.add_scalar("val/accuracy", accuracy.compute(), epoch)
-    accuracy.reset()
+    writer.add_scalar("val/loss", avg_loss, epoch)
+    writer.add_scalar("val/accuracy", avg_accuracy, epoch)
+
+    return avg_loss, avg_accuracy

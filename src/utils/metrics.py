@@ -164,6 +164,7 @@ class BinaryAccuracy(Accuracy):
         self.threshold = threshold
 
     def update(self, logits: torch.Tensor, labels: torch.Tensor) -> None:
-        predictions = (torch.sigmoid(logits) > self.threshold).long()
+        # predictions = (torch.sigmoid(logits) > self.threshold).long()
+        predictions = (torch.sigmoid(logits) > self.threshold).float()
         self.correct += int(predictions.eq(labels).sum().item())
         self.total += labels.nelement()

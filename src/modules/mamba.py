@@ -192,6 +192,9 @@
 #             return normed_x + self.bias
 #
 #         return normed_x
+
+
+
 r"""
 为满足torch.nn.BCEWithLogitsLoss 期望输入和目标张量的类型为 torch.float32，建立了以下的float模型
 """

@@ -179,6 +179,7 @@ from src.binary_classification.data2017 import load_ekg_data2017
 from src.utils.metrics import BinaryAccuracy
 from src.utils.torchutils import set_seed, save_model
 from src.modules.mamba import MambaBEAT
+import matplotlib.pyplot as plt
 
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 print(f"Device: {device}")
@@ -189,27 +190,27 @@ torch.set_num_threads(8)
 
 def main() -> None:
     DATA_PATH = "./data/training2017/"
-    N_CLASSES = 1
+    N_CLASSES = 2
 
-    epochs = 2
-    lr = 0.1
-    batch_size = 128
-    step_size = 25
-    gamma = 0.8
+    #hyperparameters
+    epochs: int = 29
+    lr: float = 0.1
+    batch_size: int = 128
+    step_size: int = 25
+    gamma: float = 0.8
 
-    n_layers = 1
-    latent_state_dim = 12
-    expand = 2
-    dt_rank = None
-    kernel_size = 12
-    conv_bias = True
-    bias = False
-    method = "zoh"
-    dropout = 0.0
+    # Mamba Hyperparameters
+    n_layers: int = 1
+    latent_state_dim: int = 12
+    expand: int = 2
+    dt_rank: int = None
+    kernel_size: int = 12
+    conv_bias: bool = True
+    bias: bool = False
+    method: str = "zoh"
+    dropout: float = 0.2
 
     train_data, val_data, test_data = load_ekg_data2017(DATA_PATH, batch_size=batch_size)
-    # 保存 test_data
-    torch.save(test_data, './data/training2017/test_data.pt')
 
 
 
@@ -218,7 +219,7 @@ def main() -> None:
 
 
 
-    name = "binary_MambaBEAT+data2017_1epoch_NA"
+    name = f"binary_MambaBEAT+data2017_{epochs}epoch_NA"
     writer = SummaryWriter(f"runs/{name}")
     inputs = next(iter(train_data))[0]
 
@@ -241,22 +242,60 @@ def main() -> None:
         .float()  # 确保模型参数为 float32
     )
 
-    loss = torch.nn.BCEWithLogitsLoss()
+    loss = torch.nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
     accuracy = BinaryAccuracy()
 
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
+    # scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', factor=0.5, patience=2)
+
+    train_losses = []
+    val_losses = []
+    train_accuracies = []
+    val_accuracies = []
 
     try:
         for epoch in tqdm(range(epochs)):
-            train_step(model, train_data, loss, optimizer, writer, epoch, device, accuracy)
-            val_step(model, val_data, loss, scheduler, writer, epoch, device, accuracy)
+
+            print("-" * 20)
+            train_loss, train_acc = train_step(model, train_data, loss, optimizer, writer, epoch, device, accuracy)
+            val_loss, val_acc = val_step(model, val_data, loss, scheduler, writer, epoch, device, accuracy)
+
+            train_losses.append(train_loss)
+            val_losses.append(val_loss)
+            train_accuracies.append(train_acc)
+            val_accuracies.append(val_acc)
+
+            print(f"Epoch {epoch + 1}/{epochs}")
+            print(f"Train Loss: {train_loss:.4f}, Train Accuracy: {train_acc:.4f}")
+            print(f"Val Loss: {val_loss:.4f}, Val Accuracy: {val_acc:.4f}")
             torch.cuda.empty_cache()
     except KeyboardInterrupt:
         pass
 
     save_model(model, f"./models/{name}.pth")
+    #save the weight
+
+
+    # 绘制损失和准确率的变化图
+    epochs_range = range(epochs)
+
+    plt.figure(figsize=(12, 6))
+
+    plt.subplot(1, 2, 1)
+    plt.plot(epochs_range, train_losses, label='Train Loss')
+    plt.plot(epochs_range, val_losses, label='Val Loss')
+    plt.legend(loc='upper right')
+    plt.title('Training and Validation Loss')
+
+    plt.subplot(1, 2, 2)
+    plt.plot(epochs_range, train_accuracies, label='Train Accuracy')
+    plt.plot(epochs_range, val_accuracies, label='Val Accuracy')
+    plt.legend(loc='upper right')
+    plt.title('Training and Validation Accuracy')
+    plt.savefig(f'.{name}.png')
+    plt.show()
 
 if __name__ == "__main__":
     main()

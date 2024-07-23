@@ -220,7 +220,7 @@ def load_ekg_data(
     if not os.path.isdir(f"{path}"):
         os.makedirs(f"{path}")
         print("开始下载了")
-        download_data(path)
+        # download_data(path)
 
 
     Y = pd.read_csv(path + "ptbxl_database.csv", index_col="ecg_id")

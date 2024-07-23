@@ -37,7 +37,7 @@ def main() -> None:
     This function is the main program for the training.
     """
     # hyperparameters
-    epochs: int = 60
+    epochs: int = 2
     lr: float = 1e-2
     batch_size: int = 256
 
